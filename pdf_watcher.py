@@ -82,11 +82,8 @@ class PDFWatcher(FileSystemEventHandler):
             print(f"\n[{datetime.now().strftime('%H:%M:%S')}] Starting merge operation...")
             print("-" * 60)
 
-            # Find all PDF files (exclude previous merged outputs)
-            pdf_files = sorted([
-                f for f in self.watch_dir.glob("*.pdf")
-                if not f.name.startswith("merged_output_")
-            ])
+            # Find all PDF files
+            pdf_files = sorted([f for f in self.watch_dir.glob("*.pdf")])
 
             if len(pdf_files) < 2:
                 print(f"Found {len(pdf_files)} PDF(s). Need at least 2 PDFs to merge.")
@@ -131,6 +128,26 @@ class PDFWatcher(FileSystemEventHandler):
             print(f"  File: {output_filename}")
             print(f"  Total pages: {total_pages}")
             print(f"  Location: {output_path}")
+            print("-" * 60)
+
+            # Create archive folder and move all PDFs
+            archive_folder = self.watch_dir / f"merged_{timestamp}"
+            archive_folder.mkdir(exist_ok=True)
+            print(f"\nMoving all PDFs to archive folder: {archive_folder.name}")
+
+            # Move all PDF files (including source PDFs and merged output)
+            all_pdfs = list(self.watch_dir.glob("*.pdf"))
+            for pdf_file in all_pdfs:
+                try:
+                    destination = archive_folder / pdf_file.name
+                    pdf_file.rename(destination)
+                    print(f"  Moved: {pdf_file.name}")
+                except Exception as e:
+                    print(f"  ERROR moving {pdf_file.name}: {e}")
+
+            print("-" * 60)
+            print(f"✓ All PDFs moved to: {archive_folder}")
+            print(f"  Watch folder is now empty and ready for new PDFs")
             print("-" * 60)
             print(f"[{datetime.now().strftime('%H:%M:%S')}] Waiting for new PDFs...\n")
 

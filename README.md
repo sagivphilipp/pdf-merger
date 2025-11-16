@@ -36,8 +36,9 @@ Monitors a folder and automatically merges PDFs when new files are added.
 - Real-time folder monitoring
 - Automatic merge on new PDF detection
 - 3-second delay to handle multiple files being added
-- Excludes previous merged outputs from new merges
-- Timestamped output files
+- **Auto-archives**: Moves all PDFs to timestamped subfolder after merge
+- **Prevents recursive merging**: Watch folder stays clean and ready for new PDFs
+- Timestamped output files and archive folders
 - Console shows live status updates
 
 ---
@@ -70,9 +71,21 @@ C:\Inbox\
 
 1. Run `PDFWatcher.exe`
 2. Select option 1 (watch current directory)
-3. Copy PDFs into C:\Inbox\
+3. Copy `file1.pdf` and `file2.pdf` into C:\Inbox\
 4. Watcher auto-merges after 3 seconds
-5. Repeat as needed - keeps watching!
+5. **All PDFs moved** to `C:\Inbox\merged_20251115_143022\`
+6. C:\Inbox\ is now empty and ready for new PDFs!
+7. Repeat as needed - keeps watching!
+
+**Result:**
+```
+C:\Inbox\
+  ├── PDFWatcher.exe
+  └── merged_20251115_143022\
+      ├── file1.pdf (original)
+      ├── file2.pdf (original)
+      └── merged_output_20251115_143022.pdf (merged result)
+```
 
 ---
 
@@ -121,6 +134,9 @@ Find executables in `dist/` folder.
 - Detects `.pdf` file creation/modification events
 - Waits 3 seconds after last change (debounce)
 - Auto-runs merge operation
+- Creates timestamped archive folder (e.g., `merged_20251115_143022/`)
+- Moves all PDFs (originals + merged output) into archive folder
+- Clears watch folder to prevent recursive merging
 - Continues monitoring after merge
 
 ---
