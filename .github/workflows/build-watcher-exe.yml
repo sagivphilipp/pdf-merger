@@ -1,0 +1,44 @@
+name: Build PDF Watcher Executable
+
+on:
+  push:
+    branches: [ main, dev ]
+    paths:
+      - 'pdf_watcher.py'
+      - 'requirements.txt'
+      - 'pdf_watcher.spec'
+      - '.github/workflows/build-watcher-exe.yml'
+  workflow_dispatch:  # Allows manual trigger from GitHub Actions tab
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Build executable with PyInstaller
+      run: |
+        pyinstaller --clean -y pdf_watcher.spec
+
+    - name: Upload executable as artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: PDFWatcher-Windows
+        path: dist/PDFWatcher.exe
+        retention-days: 90
+
+    - name: Display success message
+      run: |
+        echo "✓ Build complete! Download PDFWatcher.exe from the Artifacts section."

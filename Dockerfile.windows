@@ -1,0 +1,37 @@
+# Multi-stage build using Wine on Linux
+FROM --platform=linux/amd64 python:3.11-slim
+
+WORKDIR /app
+
+# Install Wine and dependencies
+RUN dpkg --add-architecture i386 && \
+    apt-get update && \
+    apt-get install -y wine wine32 wine64 && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Set up Wine prefix
+ENV WINEPREFIX=/root/.wine
+ENV WINEARCH=win64
+
+# Initialize Wine
+RUN wine wineboot --init
+
+# Download and install Python for Windows
+ADD https://www.python.org/ftp/python/3.11.0/python-3.11.0-amd64.exe /tmp/python-installer.exe
+RUN wine /tmp/python-installer.exe /quiet InstallAllUsers=1 PrependPath=1 && \
+    rm /tmp/python-installer.exe
+
+# Copy project files
+COPY requirements.txt .
+COPY pdf_merger.py .
+COPY pdf_merger.spec .
+
+# Install Python packages in Wine
+RUN wine python -m pip install --upgrade pip && \
+    wine python -m pip install -r requirements.txt
+
+# Build the executable
+RUN wine python -m PyInstaller --clean -y pdf_merger.spec
+
+CMD ["/bin/bash"]
